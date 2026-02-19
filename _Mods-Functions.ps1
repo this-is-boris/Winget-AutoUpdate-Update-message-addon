@@ -268,6 +268,234 @@ function Grant-ModsPath ($GrantPath) {
     Return
 }
 
+function Get-WAUFallbackDialogTemplate {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateFile
+    )
+
+    switch ($TemplateFile) {
+        "PostponeDialog.xaml" {
+            return @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Winget-AutoUpdate"
+        Width="720" Height="360"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        AllowsTransparency="True"
+        Topmost="True">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="Bg" Color="#111317"/>
+        <SolidColorBrush x:Key="Surface" Color="#1A1E26"/>
+        <SolidColorBrush x:Key="Text" Color="#E7EAF0"/>
+        <SolidColorBrush x:Key="SubText" Color="#B6BECE"/>
+        <SolidColorBrush x:Key="Accent" Color="#2B6DF3"/>
+        <SolidColorBrush x:Key="Danger" Color="#FF8A8A"/>
+
+        <DropShadowEffect x:Key="Shadow" BlurRadius="28" ShadowDepth="0" Opacity="0.45"/>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderBrush" Value="#00000000"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#2A3142"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="18" Background="{StaticResource Bg}" Effect="{StaticResource Shadow}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="82"/>
+            </Grid.RowDefinitions>
+
+            <Border x:Name="TitleBar" Grid.Row="0" Background="#0D0F14" CornerRadius="18,18,0,0">
+                <Grid Margin="14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="1" Text="Winget-AutoUpdate" Foreground="{StaticResource SubText}" VerticalAlignment="Center"/>
+
+                    <Button x:Name="BtnClose" Grid.Column="2" Width="34" Height="26"
+                            Background="#00000000" BorderBrush="#00000000"
+                            Foreground="{StaticResource SubText}" Content="X" FontSize="14" FontWeight="SemiBold" Cursor="Hand"/>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="1" Margin="22,18,22,10" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Width="42" Height="42" Margin="0,0,12,0" Stretch="Uniform" Source="__ALERT_ICON_PATH__"/>
+                    <TextBlock Text="Application Update Scheduled" Foreground="{StaticResource Text}" FontSize="26" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Margin="0,6,0,0" Text="Winget-AutoUpdate will install updates shortly." Foreground="{StaticResource SubText}" FontSize="13"/>
+
+                <Border Margin="0,18,0,0" Background="{StaticResource Surface}" CornerRadius="14" Padding="16">
+                    <StackPanel>
+                        <DockPanel LastChildFill="True">
+                            <Image Width="24" Height="24" Margin="0,0,10,0" Stretch="Uniform" Source="__WARN_ICON_PATH__"/>
+                            <TextBlock Text="Automatic updates are configured to keep your applications secure and up to date."
+                                       Foreground="{StaticResource Text}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </DockPanel>
+
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="If you are currently busy, you can postpone the update. Otherwise, it will be performed as scheduled."
+                                   Foreground="{StaticResource SubText}" TextWrapping="Wrap"/>
+
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="The computer may restart automatically without warning to complete the update process. Please save your work to avoid data loss."
+                                   Foreground="{StaticResource Danger}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,22,20">
+                <Button x:Name="BtnSnooze30" Style="{StaticResource SecondaryButton}" Width="146" Height="44" Margin="0,0,10,0" Content="Postpone 30 min"/>
+                <Button x:Name="BtnSnooze60" Style="{StaticResource SecondaryButton}" Width="146" Height="44" Margin="0,0,10,0" Content="Postpone 60 min"/>
+                <Button x:Name="BtnUpdateNow" Style="{StaticResource PrimaryButton}" Width="136" Height="44" Content="Update Now"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+"@
+        }
+        "UpdateStartingNotification.xaml" {
+            return @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Winget-AutoUpdate"
+        Width="720" Height="280"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        AllowsTransparency="True"
+        Topmost="True">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="Bg" Color="#111317"/>
+        <SolidColorBrush x:Key="Surface" Color="#1A1E26"/>
+        <SolidColorBrush x:Key="Text" Color="#E7EAF0"/>
+        <SolidColorBrush x:Key="SubText" Color="#B6BECE"/>
+        <SolidColorBrush x:Key="Danger" Color="#FF8A8A"/>
+
+        <DropShadowEffect x:Key="Shadow" BlurRadius="28" ShadowDepth="0" Opacity="0.45"/>
+    </Window.Resources>
+
+    <Border CornerRadius="18" Background="{StaticResource Bg}" Effect="{StaticResource Shadow}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border x:Name="TitleBar" Grid.Row="0" Background="#0D0F14" CornerRadius="18,18,0,0">
+                <Grid Margin="14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="1" Text="Winget-AutoUpdate" Foreground="{StaticResource SubText}" VerticalAlignment="Center"/>
+
+                    <Button x:Name="BtnClose" Grid.Column="2" Width="34" Height="26"
+                            Background="#00000000" BorderBrush="#00000000"
+                            Foreground="{StaticResource SubText}" Content="X" FontSize="14" FontWeight="SemiBold" Cursor="Hand"/>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="1" Margin="22,18,22,18" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Width="38" Height="38" Margin="0,0,12,0" Stretch="Uniform" Source="__ALERT_ICON_PATH__"/>
+                    <TextBlock Text="Updates Starting" Foreground="{StaticResource Text}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Border Margin="0,14,0,0" Background="{StaticResource Surface}" CornerRadius="14" Padding="16">
+                    <StackPanel>
+                        <DockPanel LastChildFill="True">
+                            <Image Width="24" Height="24" Margin="0,0,10,0" Stretch="Uniform" Source="__WARN_ICON_PATH__"/>
+                            <TextBlock Text="Postpone time has ended. Updates are now starting."
+                                       Foreground="{StaticResource Text}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </DockPanel>
+
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="Please save all open documents now. The computer may restart automatically to complete updates."
+                                   Foreground="{StaticResource Danger}" TextWrapping="Wrap"/>
+
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="This window will close automatically in 1 minute."
+                                   Foreground="{StaticResource SubText}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+"@
+        }
+        default {
+            return $null
+        }
+    }
+}
+
+function Get-WAUDialogTemplate {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateFile,
+
+        [Parameter(Mandatory = $false)]
+        [hashtable]$Replacements
+    )
+
+    $templatePath = Join-Path $PSScriptRoot "dialogs\$TemplateFile"
+    $xamlTemplate = $null
+
+    if (Test-Path $templatePath) {
+        $xamlTemplate = Get-Content -Path $templatePath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    }
+
+    if (-not $xamlTemplate) {
+        $xamlTemplate = Get-WAUFallbackDialogTemplate -TemplateFile $TemplateFile
+        if (-not $xamlTemplate) {
+            return $null
+        }
+    }
+
+    if ($Replacements) {
+        foreach ($key in $Replacements.Keys) {
+            $xamlTemplate = $xamlTemplate.Replace([string]$key, [string]$Replacements[$key])
+        }
+    }
+
+    return $xamlTemplate
+}
+
 function Show-WAUPostponeDialog {
     <#
     .SYNOPSIS
@@ -308,90 +536,21 @@ function Show-WAUPostponeDialog {
     $isSystem = [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
     $sessionID = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
     
-    # Define XAML UI (shared between ServiceUI and direct display)
-    $xamlTemplate = @"
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Application Update Scheduled"
-        Height="320" Width="540"
-        WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize"
-        WindowStyle="SingleBorderWindow"
-        Background="#1E1E1E"
-        Foreground="#FFFFFF"
-        FontFamily="Segoe UI"
-        Icon="$PSScriptRoot\..\icons\update.ico"
-        Topmost="True">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    $legacyIconPath = Join-Path $PSScriptRoot "..\icons\update.ico"
+    $alertIconPath = Join-Path $PSScriptRoot "..\icons\alert.png"
+    $warnIconPath = Join-Path $PSScriptRoot "..\icons\crisis.png"
+    if (-not (Test-Path $warnIconPath)) {
+        $warnIconPath = $alertIconPath
+    }
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
-            <Border Width="56" Height="56" CornerRadius="28" Margin="0,0,10,0" ClipToBounds="True" VerticalAlignment="Center">
-                <Image Source="$PSScriptRoot\..\icons\updatelogo.png"/>
-            </Border>
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Application Update Scheduled"
-                           FontSize="18"
-                           FontWeight="Bold"
-                           Foreground="#FFFFFF"/>
-                <TextBlock Text="Winget-AutoUpdate will install updates shortly."
-                           FontSize="12"
-                           Foreground="#B0B0B0"
-                           Margin="0,2,0,0"/>
-            </StackPanel>
-        </StackPanel>
-
-        <Border Grid.Row="1" CornerRadius="8" Background="#FF2A2A2A" Padding="15">
-            <StackPanel>
-                <TextBlock Text="To ensure the security and up-to-date status of your applications, automatic updates are configured on this computer."
-                           TextWrapping="Wrap"
-                           FontSize="13"
-                           Margin="0,0,0,10"/>
-                <TextBlock Text="If you are currently busy with an important task, you can postpone the update. Otherwise, the update will be performed as scheduled."
-                           TextWrapping="Wrap"
-                           FontSize="13"
-                           Foreground="#CCCCCC"/>
-            </StackPanel>
-        </Border>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
-            <Button x:Name="BtnSnooze30"
-                    Content="Postpone 30 min"
-                    Margin="0,0,10,0"
-                    Padding="14,6"
-                    Background="#3B68FC"
-                    Foreground="White"
-                    BorderBrush="#3B68FC"
-                    BorderThickness="1"
-                    Cursor="Hand"/>
-
-            <Button x:Name="BtnSnooze60"
-                    Content="Postpone 60 min"
-                    Margin="0,0,10,0"
-                    Padding="14,6"
-                    Background="#3B68FC"
-                    Foreground="White"
-                    BorderBrush="#3B68FC"
-                    BorderThickness="1"
-                    Cursor="Hand"/>
-
-            <Button x:Name="BtnUpdateNow"
-                    Content="Update Now"
-                    Padding="16,6"
-                    Background="#3B68FC"
-                    Foreground="White"
-                    BorderBrush="#3B68FC"
-                    BorderThickness="1"
-                    FontWeight="SemiBold"
-                    Cursor="Hand"/>
-        </StackPanel>
-    </Grid>
-</Window>
-"@
+    $xamlTemplate = Get-WAUDialogTemplate -TemplateFile "PostponeDialog.xaml" -Replacements @{
+        "__ALERT_ICON_PATH__" = $alertIconPath
+        "__WARN_ICON_PATH__" = $warnIconPath
+        "__ICON_PATH__" = $legacyIconPath
+    }
+    if (-not $xamlTemplate) {
+        return $null
+    }
     
     # Branch 1: SYSTEM context in Session 0 - use ServiceUI if available
     if ($isSystem -and $sessionID -eq 0) {
@@ -415,6 +574,8 @@ $xamlTemplate
 `$btnUpdateNow = `$window.FindName("BtnUpdateNow")
 `$btnSnooze30  = `$window.FindName("BtnSnooze30")
 `$btnSnooze60  = `$window.FindName("BtnSnooze60")
+`$btnClose     = `$window.FindName("BtnClose")
+`$titleBar     = `$window.FindName("TitleBar")
 
 `$script:UserChoice = 0
 
@@ -422,6 +583,19 @@ $xamlTemplate
     `$script:UserChoice = 0
     `$window.Close()
 })
+
+if (`$btnClose) {
+    `$btnClose.Add_Click({
+        `$script:UserChoice = 0
+        `$window.Close()
+    })
+}
+
+if (`$titleBar) {
+    `$titleBar.Add_MouseLeftButtonDown({
+        try { `$window.DragMove() } catch {}
+    })
+}
 
 `$btnSnooze30.Add_Click({
     `$script:UserChoice = 5
@@ -475,6 +649,8 @@ Exit `$script:UserChoice
         $btnUpdateNow = $window.FindName("BtnUpdateNow")
         $btnSnooze30  = $window.FindName("BtnSnooze30")
         $btnSnooze60  = $window.FindName("BtnSnooze60")
+        $btnClose     = $window.FindName("BtnClose")
+        $titleBar     = $window.FindName("TitleBar")
         
         $script:UserChoice = $null
         
@@ -482,6 +658,19 @@ Exit `$script:UserChoice
             $script:UserChoice = $null
             $window.Close()
         })
+
+        if ($btnClose) {
+            $btnClose.Add_Click({
+                $script:UserChoice = $null
+                $window.Close()
+            })
+        }
+
+        if ($titleBar) {
+            $titleBar.Add_MouseLeftButtonDown({
+                try { $window.DragMove() } catch {}
+            })
+        }
         
         $btnSnooze30.Add_Click({
             $script:UserChoice = 0.5
@@ -497,4 +686,127 @@ Exit `$script:UserChoice
         
         return $script:UserChoice
     }
+}
+
+function Show-WAUUpdateStartingNotification {
+    <#
+    .SYNOPSIS
+        Shows an informational dialog that updates are starting.
+
+    .PARAMETER TimeoutSeconds
+        Number of seconds before the window closes automatically. Default: 60.
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [int]$TimeoutSeconds = 60
+    )
+
+    if ($TimeoutSeconds -lt 1) {
+        $TimeoutSeconds = 60
+    }
+
+    $isSystem = [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
+    $sessionID = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
+
+
+    $alertIconPath = Join-Path $PSScriptRoot "..\icons\alert.png"
+    $warnIconPath = Join-Path $PSScriptRoot "..\icons\crisis.png"
+    if (-not (Test-Path $warnIconPath)) {
+        $warnIconPath = $alertIconPath
+    }
+
+    $xamlTemplate = Get-WAUDialogTemplate -TemplateFile "UpdateStartingNotification.xaml" -Replacements @{
+
+        "__ALERT_ICON_PATH__" = $alertIconPath
+        "__WARN_ICON_PATH__" = $warnIconPath
+    }
+    if (-not $xamlTemplate) {
+        return
+    }
+
+    if ($isSystem -and $sessionID -eq 0) {
+        $ServiceUIexe = Join-Path $PSScriptRoot "..\ServiceUI.exe"
+
+        if (Test-Path $ServiceUIexe) {
+            $tempScript = "$env:TEMP\WAU_UpdateStartingNotification_$(Get-Random).ps1"
+
+            $serviceUIScript = @"
+Add-Type -AssemblyName PresentationCore,PresentationFramework,WindowsBase
+
+`$xaml = @'
+$xamlTemplate
+'@
+
+`$reader = New-Object System.Xml.XmlNodeReader ([xml]`$xaml)
+`$window = [Windows.Markup.XamlReader]::Load(`$reader)
+`$btnClose = `$window.FindName("BtnClose")
+`$titleBar = `$window.FindName("TitleBar")
+
+if (`$btnClose) {
+    `$btnClose.Add_Click({
+        `$window.Close()
+    })
+}
+
+if (`$titleBar) {
+    `$titleBar.Add_MouseLeftButtonDown({
+        try { `$window.DragMove() } catch {}
+    })
+}
+
+`$timer = New-Object System.Windows.Threading.DispatcherTimer
+`$timer.Interval = [TimeSpan]::FromSeconds($TimeoutSeconds)
+`$timer.Add_Tick({
+    `$timer.Stop()
+    `$window.Close()
+})
+`$timer.Start()
+
+`$null = `$window.ShowDialog()
+"@
+
+            $serviceUIScript | Out-File -FilePath $tempScript -Encoding UTF8 -Force
+
+            try {
+                Start-Process -FilePath $ServiceUIexe `
+                    -ArgumentList "-process:explorer.exe powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$tempScript`"" `
+                    -Wait -NoNewWindow | Out-Null
+            }
+            finally {
+                Remove-Item $tempScript -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+    else {
+        Add-Type -AssemblyName PresentationCore,PresentationFramework,WindowsBase
+
+        $reader = New-Object System.Xml.XmlNodeReader ([xml]$xamlTemplate)
+        $window = [Windows.Markup.XamlReader]::Load($reader)
+        $btnClose = $window.FindName("BtnClose")
+        $titleBar = $window.FindName("TitleBar")
+
+        if ($btnClose) {
+            $btnClose.Add_Click({
+                $window.Close()
+            })
+        }
+
+        if ($titleBar) {
+            $titleBar.Add_MouseLeftButtonDown({
+                try { $window.DragMove() } catch {}
+            })
+        }
+
+        $timer = New-Object System.Windows.Threading.DispatcherTimer
+        $timer.Interval = [TimeSpan]::FromSeconds($TimeoutSeconds)
+        $timer.Add_Tick({
+            $timer.Stop()
+            $window.Close()
+        })
+        $timer.Start()
+
+        $null = $window.ShowDialog()
+    }
+
+    Return
 }

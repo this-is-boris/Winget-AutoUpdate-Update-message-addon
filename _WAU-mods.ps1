@@ -150,6 +150,20 @@ try {
     
     if (-not $allowPostpone) {
         Write-DebugLog "Postpone not allowed - forcing update to proceed"
+
+        # If postpone was already used, show one-time "update starting" notification
+        try {
+            if (Get-Command Show-WAUUpdateStartingNotification -ErrorAction SilentlyContinue) {
+                Write-DebugLog "Showing update starting notification (postpone already used)"
+                Show-WAUUpdateStartingNotification -TimeoutSeconds 60
+            }
+            else {
+                Write-DebugLog "Show-WAUUpdateStartingNotification function not found, skipping notification"
+            }
+        }
+        catch {
+            Write-DebugLog "ERROR showing update starting notification: $($_.Exception.Message)"
+        }
         
         # Clear postpone history to allow future postpones after update
         try {

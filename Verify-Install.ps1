@@ -14,7 +14,11 @@ $filesToCheck = @(
     "_Mods-Functions.ps1",
     "_WAU-mods.ps1"
 )
-$iconToCheck = "update.ico"
+$iconFilesToCheck = @(
+    "crisis.png",
+    "update.png"
+)
+$templatesFolderPath = Join-Path $wauModsPath "templates"
 
 $allOk = $true
 
@@ -29,13 +33,23 @@ foreach ($file in $filesToCheck) {
     }
 }
 
-# --- Check icon ---
-$iconPath = Join-Path $wauIconsPath $iconToCheck
-if (-not (Test-Path $iconPath)) {
-    Write-Host "[ERROR] Missing icon: $iconPath"
+# --- Check templates folder ---
+if (-not (Test-Path $templatesFolderPath)) {
+    Write-Host "[ERROR] Missing folder: $templatesFolderPath"
     $allOk = $false
 } else {
-    Write-Host "[OK] Found: $iconPath"
+    Write-Host "[OK] Found: $templatesFolderPath"
+}
+
+# --- Check icons ---
+foreach ($iconFile in $iconFilesToCheck) {
+    $iconPath = Join-Path $wauIconsPath $iconFile
+    if (-not (Test-Path $iconPath)) {
+        Write-Host "[ERROR] Missing icon: $iconPath"
+        $allOk = $false
+    } else {
+        Write-Host "[OK] Found: $iconPath"
+    }
 }
 
 # --- Check function in _Mods-Functions.ps1 ---
